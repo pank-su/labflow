@@ -1,7 +1,7 @@
 ---
 name: labflow
 description: Run a reproducible workflow for academic tasks.
-version: 0.1.0
+version: 0.1.1
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -34,7 +34,17 @@ Do not use it for a one-line calculation or an isolated code fix with no task co
 
 ## Phase Selection
 
-1. Always run `labflow-context` first.
+First distinguish a full academic deliverable from a bounded revision to an existing
+artifact. For a bounded text, heading, or slide correction, read the current source
+and applicable contract, execute only the affected phase, and verify the rebuilt
+artifact plus dependent contents/pagination. Do not rebuild unrelated code or launch
+whole-project reviews solely for a cosmetic edit. State that the revision is verified,
+not that the full project is independently approved. Any changed candidate invalidates
+prior full publication approval; fresh required reviews remain mandatory before
+commit/push. A full deliverable follows all phases below. GUAP-specific source/style
+rules are in the separate `labflow-guap` adapter; keep this skill university-agnostic.
+
+1. Run `labflow-context` first for a new full deliverable; reuse and update current context for a bounded revision.
 2. Run `labflow-coding` when the context requires software or simulations.
 3. Run `labflow-math` when formulas, numerical methods, statistics, or data analysis are required.
 4. Run `labflow-report` when a report is requested or required.
@@ -115,6 +125,22 @@ the literal line `Final Status: passed`.
 
 If a phase fails, preserve its logs, state the failing phase, and retry only after
 identifying the cause. Do not silently skip a failed compile, test, or calculation.
+
+Before review, freeze and fingerprint candidate inputs, including untracked source
+and generated deliverables; exclude review-owned outputs to avoid a circular hash.
+Give reviewers the authoritative template source, requirement contract and explicit
+exceptions. A previous Git revision is not automatically the user's template baseline.
+Keep separate states for build verified, review passed, locally delivered and published.
+Interrupted, missing or stale verdicts never count as passed. Preserve superseded
+reviews with their candidate identity rather than overwriting historical evidence.
+
+Only functional defects require failing regression tests. Editorial findings require
+source corrections, compilation and visual verification, not fabricated tests. After
+one fix/review cycle, classify new findings as blockers versus optional suggestions.
+If reviews continue to expand scope, report the exact remaining blocker and seek a
+bounded decision rather than launching an unbounded loop. Never waive a real blocker
+merely to finish. Give short progress updates during long runs. Honor stop requests;
+a late asynchronous result does not authorize resuming stopped work.
 
 ## Completion
 

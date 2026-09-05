@@ -1,7 +1,7 @@
 ---
 name: labflow-typst
 description: Generate a complete context-driven Typst report structure.
-version: 0.2.0
+version: 0.2.1
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -24,6 +24,9 @@ not invent title-page metadata, directories, or section names.
 - A project needs a repeatable GOST-style baseline without a university-specific template.
 
 Do not use it when an institutional template is explicitly required and must be preserved.
+For GUAP, use `labflow-guap` and its protected generator instead. Never run this
+initializer or `--force` over a protected GUAP project: the body is editable only in
+`index.typ`, while title metadata is changed only by that generator's `title` command.
 
 ## Prerequisites
 
