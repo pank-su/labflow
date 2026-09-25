@@ -1,7 +1,7 @@
 ---
 name: labflow-self-review
 description: Review code, report appearance, and requirement coverage.
-version: 0.2.0
+version: 0.3.0
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -24,6 +24,17 @@ not the truth of calculations, command execution, or image inspection.
 - Recheck a corrected candidate after substantive findings.
 - For a bounded local text/format revision, apply only the affected checks;
   do not restart a whole-project review or imply full approval.
+
+## Runtime-managed reviews
+
+When the parent uses the Labflow runtime, read its `references/runtime.md`.
+The parent supplies the authoritative expected candidate, requirement/page scope
+and an external bundle directory. Write `SELF_REVIEW.md`, actual logs/renders and
+`verdict.json` there, never inside frozen inputs. Return that bundle path; do not
+edit the candidate, parent registry or expected scope. Parent registration uses
+real reviewer identity, then recomputes candidate/evidence before approval.
+Interrupted or blocked review must return that explicit status, not reuse passed.
+The standalone Markdown checker still checks structure only.
 
 ## Review scope and applicability
 

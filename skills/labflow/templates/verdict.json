@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "candidate": "REPLACE_WITH_PARENT_PINNED_SHA256",
+  "status": "blocked",
+  "coverage": [],
+  "pages": [],
+  "report": null,
+  "checks": []
+}

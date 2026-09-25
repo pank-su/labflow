@@ -65,6 +65,15 @@ agent nor a generator may invent them.
 
 Use `templates/artifact-contract.md` as a compact starting point; fill only from actual sources.
 
+## Machine-readable provenance
+
+For runtime-managed work, retain the checklist IDs and populate the Labflow
+`source-spec.json` template after the actual target fragments exist. The parent
+seals it with `sources-seal`, then checks exact ID coverage before freezing the
+candidate. Use real source lines/PDF pages and preserve explicit notation tokens;
+missing input is blocked, not a substitute from a similar topic. Hashes do not
+prove the semantics of derived text or calculations. See the `labflow` runtime reference.
+
 ## Self-Review Handoff
 
 Compare the checklist against the original source. Confirm that every required

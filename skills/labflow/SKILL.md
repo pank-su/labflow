@@ -1,7 +1,7 @@
 ---
 name: labflow
 description: Run a reproducible workflow for academic tasks.
-version: 0.2.0
+version: 0.3.0
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -31,6 +31,24 @@ Do not use it for a one-line calculation or an isolated code fix with no task co
 - The task source and all available input files are present in the workspace.
 - The workspace is writable.
 - If a required input is missing, record it in `context/open_questions.md` instead of guessing.
+
+## Local runtime
+
+For full deliverables, publication candidates, and recurring/batch runs, read
+[references/runtime.md](references/runtime.md) before acting. Through `terminal`,
+invoke `python3 <skill-root>/scripts/labflow.py --help`, resolving this skill root
+from the loader. Python 3.10+; PDF source locators additionally need PyMuPDF.
+Install `labflow-self-review` beside this skill for the independent approval gate.
+
+Use source-map sealing to bind actual fragments to each requirement, `freeze` to
+capture inputs/outputs before delegation, then parent-owned `review` registration
+and `verify --approved`. Store registry, review bundles and expected identity
+outside the candidate; the reviewer never chooses the authoritative scope.
+For batches use persisted `batch-preflight` before domain tools and the ticketed
+phase protocol. A full review result cannot be substituted by a phase pass flag.
+For a bounded one-off revision, use only affected verification without pretending
+it grants full approval. The runtime is local state validation, not a sandbox,
+semantic truth engine, scheduler, authentication system or submission service.
 
 ## Phase Selection
 
@@ -95,10 +113,11 @@ Use `delegate_task` to launch a fresh subagent with the `labflow-self-review`
 skill. Give it the exact workspace path and require four independent review
 dimensions: requirement coverage, code quality and behavior, mathematics and
 artifacts, and visual report appearance. The subagent must write `SELF_REVIEW.md`
-in that workspace.
+at the agreed review location. For runtime-managed candidates use the external
+bundle directory; never place review-owned output in a frozen input directory.
 
 After delegation, the parent agent must validate the review artifact with
-`<skill-root>/scripts/check_self_review.py <workspace>/SELF_REVIEW.md --require-passed`,
+`python3 <skill-root>/scripts/check_self_review.py <review-dir>/SELF_REVIEW.md --require-passed`,
 resolving `<skill-root>` from `labflow-self-review` rather than assuming a checkout.
 Read the linked evidence and compare the candidate fingerprint separately: the
 checker validates structure and explicit statuses, not the truth of the review. Reject a missing,
@@ -155,4 +174,5 @@ A full deliverable is complete only when:
 - All required code and mathematics artifacts exist;
 - Required commands or notebooks were executed;
 - The report format was compiled or rendered when applicable;
-- `SELF_REVIEW.md` has final status `passed` and no unresolved blocking finding.
+- `SELF_REVIEW.md` at the agreed review location has final status `passed` and no unresolved blocking finding;
+- runtime-managed candidates also pass `verify --approved` immediately before delivery/publication.
