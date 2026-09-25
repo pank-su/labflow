@@ -124,6 +124,12 @@ def main() -> int:
     args = parse_args()
     context_path = args.context.resolve()
     output = args.output_dir.resolve()
+    # Marker detection only: institutional layout and metadata stay in adapters.
+    for directory in (output, *output.parents):
+        for marker_name in (".labflow-protected", ".guap"):
+            marker = directory / marker_name
+            if marker.exists() or marker.is_symlink():
+                raise SystemExit(f"refusing to initialize inside protected project: {directory}; use its adapter")
     context = load_context(context_path)
     metadata_raw = context.get("metadata")
     metadata: dict[str, Any] = (

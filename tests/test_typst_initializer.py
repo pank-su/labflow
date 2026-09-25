@@ -30,13 +30,76 @@ deliverables:
 
 
 class TypstInitializerTests(unittest.TestCase):
+    def test_refuses_protected_project_even_with_force(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".guap").mkdir()
+            (root / ".guap/lock.json").write_text("protected", encoding="utf-8")
+            context = root / "context.json"
+            context.write_text(
+                json.dumps({"kind": "lab", "title": "Test"}), encoding="utf-8"
+            )
+            for output in (root, root / "nested"):
+                for flags in ([], ["--force"]):
+                    with self.subTest(output=output, flags=flags):
+                        result = subprocess.run(
+                            [
+                                sys.executable,
+                                str(SCRIPT),
+                                "--context",
+                                str(context),
+                                "--output-dir",
+                                str(output),
+                                *flags,
+                            ],
+                            capture_output=True,
+                            text=True,
+                        )
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("protected", result.stderr)
+                        self.assertFalse((output / "docs").exists())
+            self.assertEqual((root / ".guap/lock.json").read_text(), "protected")
+
+    def test_generic_protection_marker_and_sibling_control(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            protected = root / "protected"
+            protected.mkdir()
+            (protected / ".labflow-protected").touch()
+            context = root / "context.json"
+            context.write_text(
+                json.dumps({"kind": "practical", "title": "Control"}), encoding="utf-8"
+            )
+            for output, expected in ((protected, False), (root / "sibling", True)):
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(SCRIPT),
+                        "--context",
+                        str(context),
+                        "--output-dir",
+                        str(output),
+                    ],
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode == 0, expected, result.stderr)
+                self.assertEqual((output / "docs/index.typ").exists(), expected)
+
     def test_creates_full_lab_structure_from_context(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             context = root / "context.yaml"
             context.write_text(CONTEXT, encoding="utf-8")
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "--context", str(context), "--output-dir", tmp],
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--context",
+                    str(context),
+                    "--output-dir",
+                    tmp,
+                ],
                 check=True,
                 capture_output=True,
                 text=True,
@@ -68,9 +131,26 @@ class TypstInitializerTests(unittest.TestCase):
             root = Path(tmp)
             context = root / "context.yaml"
             context.write_text(CONTEXT, encoding="utf-8")
-            subprocess.run([sys.executable, str(SCRIPT), "--context", str(context), "--output-dir", tmp], check=True)
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--context",
+                    str(context),
+                    "--output-dir",
+                    tmp,
+                ],
+                check=True,
+            )
             result = subprocess.run(
-                [sys.executable, str(SCRIPT), "--context", str(context), "--output-dir", tmp],
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--context",
+                    str(context),
+                    "--output-dir",
+                    tmp,
+                ],
                 capture_output=True,
                 text=True,
             )

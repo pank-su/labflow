@@ -6,8 +6,8 @@ behavior under an optional skill or adapter.
 Before committing:
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 skills/labflow-typst/scripts/init_typst.py --help
+uv run --python 3.11 --with pyyaml python -m unittest discover -s tests -v
+uv run --python 3.11 --with pyyaml python skills/labflow-typst/scripts/init_typst.py --help
 ```
 
 If Typst is installed, compile a generated smoke report and confirm that the PDF

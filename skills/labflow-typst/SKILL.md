@@ -1,7 +1,7 @@
 ---
 name: labflow-typst
 description: Generate a complete context-driven Typst report structure.
-version: 0.2.1
+version: 0.3.0
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -31,7 +31,7 @@ initializer or `--force` over a protected GUAP project: the body is editable onl
 ## Prerequisites
 
 - `context/context.yaml` created by `labflow-context`.
-- Python 3.10+ for the initializer script.
+- Python 3.10+ for the initializer script. YAML input additionally needs PyYAML; JSON input uses only the standard library. Check the actual interpreter, not a remembered system version. A reproducible invocation is `terminal(command="uv run --python 3.11 --with pyyaml python <skill-root>/scripts/init_typst.py --context context/context.yaml --output-dir .")` when uv is installed.
 - Typst CLI for compilation; initialization itself does not require Typst.
 
 ## How to Run
@@ -54,8 +54,7 @@ Compile the generated report:
 typst compile docs/index.typ docs/report.pdf
 ```
 
-Use `--force` only when the generated files may be replaced intentionally. The
-script never deletes user files and never fabricates missing metadata.
+Use `--force` only when the generated files may be replaced intentionally and a recoverable copy exists. It overwrites generated content and is not a migration command. The initializer refuses a target inside a project marked `.labflow-protected` or `.guap`, including nested targets, even with `--force`. Other institutional templates must be recognized during context selection; marker detection is not a universal sandbox.
 
 ## Generated Structure
 

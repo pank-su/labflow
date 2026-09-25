@@ -72,6 +72,11 @@ skills/labflow-typst/
 находится отдельно в [guap-skill](https://github.com/pank-su/guap-skill/tree/main/skills/labflow-guap).
 Универсальный Typst-инициализатор не должен перезаписывать такой шаблон.
 
+## Улучшения workflow
+
+В [описании изменений и дополнений](docs/improvements.md) — более строгий review,
+контракт результата, защита шаблонов и приоритеты следующего развития.
+
 ## Структура репозитория
 
 ```text
