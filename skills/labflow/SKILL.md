@@ -1,7 +1,7 @@
 ---
 name: labflow
 description: Run a reproducible workflow for academic tasks.
-version: 0.1.1
+version: 0.3.0
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -32,6 +32,24 @@ Do not use it for a one-line calculation or an isolated code fix with no task co
 - The workspace is writable.
 - If a required input is missing, record it in `context/open_questions.md` instead of guessing.
 
+## Local runtime
+
+For full deliverables, publication candidates, and recurring/batch runs, read
+[references/runtime.md](references/runtime.md) before acting. Through `terminal`,
+invoke `python3 <skill-root>/scripts/labflow.py --help`, resolving this skill root
+from the loader. Python 3.10+; PDF source locators additionally need PyMuPDF.
+Install `labflow-self-review` beside this skill for the independent approval gate.
+
+Use source-map sealing to bind actual fragments to each requirement, `freeze` to
+capture inputs/outputs before delegation, then parent-owned `review` registration
+and `verify --approved`. Store registry, review bundles and expected identity
+outside the candidate; the reviewer never chooses the authoritative scope.
+For batches use persisted `batch-preflight` before domain tools and the ticketed
+phase protocol. A full review result cannot be substituted by a phase pass flag.
+For a bounded one-off revision, use only affected verification without pretending
+it grants full approval. The runtime is local state validation, not a sandbox,
+semantic truth engine, scheduler, authentication system or submission service.
+
 ## Phase Selection
 
 First distinguish a full academic deliverable from a bounded revision to an existing
@@ -48,7 +66,7 @@ rules are in the separate `labflow-guap` adapter; keep this skill university-agn
 2. Run `labflow-coding` when the context requires software or simulations.
 3. Run `labflow-math` when formulas, numerical methods, statistics, or data analysis are required.
 4. Run `labflow-report` when a report is requested or required.
-5. Always launch a fresh subagent with `labflow-self-review` before claiming completion.
+5. For a full deliverable or publication candidate, launch a fresh subagent with `labflow-self-review` before claiming independent completion. For a bounded local revision, verify the changed artifact and all affected pages/dependencies; do not launch whole-project review unless the change affects correctness or publication is requested. A missing independent-review capability leaves full approval blocked, but does not prevent delivery of a clearly labeled locally verified revision.
 
 Use matching external skills for PDF extraction, a programming language, testing,
 Jupyter, Typst, LaTeX, DOCX, or PDF when they are available. Treat them as
@@ -58,6 +76,8 @@ procedure and record the limitation.
 ## Procedure
 
 ### 1. Establish the workspace
+
+For automated or batch runs, do a cheap source/deduplication preflight before domain work: distinguish no new input, inaccessible input, and unprocessed changed input. An access failure is not a no-change result. Load specialist skills only for applicable phases. A discovered source is not processed until its required artifacts are built and verified. For batches, record each requested item and its own result; one successful item cannot mark the batch complete. Scheduling, authentication and submission policy belong to the caller/adapter, not this core.
 
 Inspect the available files and create only neutral directories: `context/`,
 `src/`, `tests/`, `math/`, `artifacts/`, `report/`, and `evidence/` as needed.
@@ -93,10 +113,14 @@ Use `delegate_task` to launch a fresh subagent with the `labflow-self-review`
 skill. Give it the exact workspace path and require four independent review
 dimensions: requirement coverage, code quality and behavior, mathematics and
 artifacts, and visual report appearance. The subagent must write `SELF_REVIEW.md`
-in that workspace.
+at the agreed review location. For runtime-managed candidates use the external
+bundle directory; never place review-owned output in a frozen input directory.
 
 After delegation, the parent agent must validate the review artifact with
-`skills/labflow-self-review/scripts/check_self_review.py`. Reject a missing,
+`python3 <skill-root>/scripts/check_self_review.py <review-dir>/SELF_REVIEW.md --require-passed`,
+resolving `<skill-root>` from `labflow-self-review` rather than assuming a checkout.
+Read the linked evidence and compare the candidate fingerprint separately: the
+checker validates structure and explicit statuses, not the truth of the review. Reject a missing,
 malformed, or misplaced file. If the status is `changes_requested`, fix every
 finding in the responsible phase and launch a new fresh review subagent. If the
 status is `blocked`, resolve the missing input or tool, ask the user when needed,
@@ -144,10 +168,11 @@ a late asynchronous result does not authorize resuming stopped work.
 
 ## Completion
 
-The workflow is complete only when:
+A full deliverable is complete only when:
 
 - `context/TASK.md` exists;
 - All required code and mathematics artifacts exist;
 - Required commands or notebooks were executed;
 - The report format was compiled or rendered when applicable;
-- `SELF_REVIEW.md` has final status `passed` and no unresolved blocking finding.
+- `SELF_REVIEW.md` at the agreed review location has final status `passed` and no unresolved blocking finding;
+- runtime-managed candidates also pass `verify --approved` immediately before delivery/publication.

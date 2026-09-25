@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "scope": "full",
+  "owner": "implementer-session-id",
+  "inputs": [
+    "inputs",
+    "context"
+  ],
+  "outputs": [
+    "out"
+  ],
+  "requirements": [
+    "R1"
+  ],
+  "source_map": "context/source-map.json",
+  "reviewers": [
+    "academic"
+  ],
+  "pages": []
+}

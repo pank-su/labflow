@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "result",
+      "scope": "full",
+      "sources": [
+        "inputs"
+      ],
+      "outputs": [
+        "out/result.csv"
+      ],
+      "phases": [
+        "context",
+        "math",
+        "verify",
+        "review"
+      ]
+    }
+  ]
+}

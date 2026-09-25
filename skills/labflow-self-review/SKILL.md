@@ -1,7 +1,7 @@
 ---
 name: labflow-self-review
 description: Review code, report appearance, and requirement coverage.
-version: 0.1.0
+version: 0.3.0
 author: Vasilii Pankov (pank-su), Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -13,114 +13,107 @@ metadata:
 
 # Labflow Self-Review
 
-Review an academic task as an independent fresh-agent pass. Check whether
-the requirements are fulfilled, the code is readable and usable, and the report
-looks correct after rendering. This skill produces findings and a decision; it
-does not silently repair the work it reviews.
+Review an academic candidate against its source requirements. Produce findings
+and a decision, not repairs or an approval inferred from the parent's claims.
+This is a review procedure; its Markdown checker validates a limited contract,
+not the truth of calculations, command execution, or image inspection.
 
 ## When to Use
 
-- At the end of every `labflow` run.
-- After changing code, calculations, report structure, or report formatting.
-- Before presenting a lab, practical task, or course project as finished.
+- Independently review a full academic deliverable or publication candidate.
+- Recheck a corrected candidate after substantive findings.
+- For a bounded local text/format revision, apply only the affected checks;
+  do not restart a whole-project review or imply full approval.
 
-## Review Model
+## Runtime-managed reviews
 
-The workflow should launch this skill in a fresh subagent through `delegate_task`.
-The parent agent supplies the workspace path and asks the reviewer to inspect the
-current state. The reviewer must not rely on the parent agent's claim that a step
-was completed.
+When the parent uses the Labflow runtime, read its `references/runtime.md`.
+The parent supplies the authoritative expected candidate, requirement/page scope
+and an external bundle directory. Write `SELF_REVIEW.md`, actual logs/renders and
+`verdict.json` there, never inside frozen inputs. Return that bundle path; do not
+edit the candidate, parent registry or expected scope. Parent registration uses
+real reviewer identity, then recomputes candidate/evidence before approval.
+Interrupted or blocked review must return that explicit status, not reuse passed.
+The standalone Markdown checker still checks structure only.
 
-Recommended delegation prompt:
+## Review scope and applicability
 
-```text
-Review the task in <workspace> using labflow-self-review.
-Read context/TASK.md, context/context.yaml, the requirements checklist, source
-files, execution artifacts, and the report. Explicitly review all four dimensions:
-(1) requirement coverage, (2) code quality and behavior, (3) mathematics and
-artifacts, and (4) visual report appearance. Run checks, tests, builds, notebooks,
-and report compilation/rendering when available. Inspect rendered report pages
-and representative code files. Do not rewrite tracked source files.
-Write SELF_REVIEW.md in <workspace> using the required headings, checks table,
-visual evidence section, severity labels, and a literal final line such as
-"Final Status: passed".
-```
+The parent supplies the workspace, exact source/task and template paths,
+`context/artifact-contract.md`, accepted exceptions, changed files, and a
+candidate fingerprint covering source inputs and delivered artifacts. Exclude
+review-owned outputs from that fingerprint and recompute it before accepting
+the result. A Git revision alone omits untracked source and generated PDFs.
 
-If `delegate_task` is unavailable, run the same procedure directly and state that
-no fresh subagent was available. This is a fallback, not equivalent evidence.
+For full approval use a fresh subagent through `delegate_task`. The reviewer
+must inspect evidence independently. If delegation is unavailable or prohibited,
+perform useful local checks but state that independent approval remains blocked.
+Do not recursively delegate from a reviewer.
+
+All four dimensions must be addressed, but only applicable work is required:
+requirements, code, mathematics/artifacts, visual report appearance. A CSV-only
+task does not require inventing a PDF; a prose-only task does not require code.
+Write `Not applicable: <source-grounded reason>` in an inapplicable dimension.
+A missing required tool or failed check is blocked, not not-applicable.
 
 ## Procedure
 
-### 1. Establish review scope
+### 1. Establish scope and requirement coverage
 
-Read the original task source, `context/TASK.md`, `context/context.yaml`,
-and `context/requirements-checklist.md`. List every explicit requirement and its
-expected evidence.
+Read the original task, `context/TASK.md`, `context/context.yaml`, the checklist,
+and artifact contract. Compare each requirement with implementation, calculation,
+report section, and evidence. Record source locators. Do not promote historical
+teacher advice or reviewer preferences into new requirements.
 
-Completion criterion: the review scope is based on source material, not on the
-implementation's self-description.
+Done: every explicit requirement is represented; each omission is a finding or
+an explicit accepted scope exception, not silently dropped.
 
-### 2. Check requirement coverage
+### 2. Review code and execution
 
-For each requirement, locate the implementation, calculation, report section,
-and verification evidence. Mark each item `passed`, `changes_requested`, or
-`blocked`. A file's existence is not evidence that its behavior is correct.
+Inspect central source files. Run applicable build, tests, formatter and a
+representative execution. Check boundaries, failure cases, placeholder or
+hardcoded results, error handling, and task/language constraints. Record actual
+commands, exit codes and logs. `SKIPPED` never means passed.
 
-Check especially:
+Do not rewrite source, data, notebooks, report files, lockfiles or baselines,
+including untracked files. Use read-only/check modes; write generated outputs
+only to a temporary directory or `artifacts/self-review/`. Run commands that may
+mutate inputs in an isolated copy and report that location.
 
-- objective and all task items;
-- variant and input data;
-- required algorithms and formulas;
-- required output files;
-- tests, tables, figures, screenshots, and report sections;
-- restrictions on language, libraries, file formats, and tools.
+Done: each executed check has actual output, and reviewed inputs are unchanged.
 
-### 3. Review the code
+### 3. Review mathematics and artifacts
 
-Inspect representative and central source files. Run the build, tests, formatter,
-and a representative execution when available. Review:
+Rerun calculations where available. Check source values, notation, dimensions,
+units, domains, intermediate precision, displayed rounding, tolerances and
+independent checks. Compare numbers in prose/tables with saved calculation data.
+Verify requested worked examples, not merely the final table. For CSV/data-only
+outputs, check encoding, delimiters, dimensions, missing values and cited evidence.
 
-- readability and naming;
-- structure and separation of responsibilities;
-- correctness at boundaries and failure cases;
-- dead code, placeholders, duplicated logic, and hardcoded data;
-- error handling and user-visible output;
-- consistency with the task and language conventions.
+Done: reported claims match real artifacts; unsupported claims are not approved.
 
-Record exact file paths and line numbers for findings. Do not rewrite source files.
+### 4. Review the actual delivered report
 
-### 4. Review the mathematics and artifacts
+Inspect the exact compiled candidate, not only a fresh potentially different
+rebuild. For a full report, enumerate every page and visually inspect every page
+using `vision_analyze` or an available viewer. A contact sheet is an overview,
+not proof of readable tables/formulas. Record page number, render path and finding
+in Visual Evidence. A rebuild can test reproducibility but does not replace
+inspection of the delivered bytes.
 
-Run the notebook or calculation script when possible. Check formulas, units,
-intermediate values, rounding, tolerances, tables, and figures. Confirm that
-reported values match the generated artifacts and that plots have readable labels,
-legends, axes, and units.
+For a bounded revision, inspect changed pages and every page affected by reflow,
+contents, references or numbering. Describe that limited coverage accurately.
 
-### 5. Review the report visually
+Check clipping, accidental blank pages, typography, page breaks, headings,
+metadata, complete listings when required, captions/labels/in-text references,
+formula rendering, and result-based conclusions. Use the current artifact
+contract, not another task's font-size or template exception. Required visual
+inspection without an available viewer/vision tool remains blocked.
 
-Compile or render the report with the selected adapter, writing generated output
-to a temporary directory or `artifacts/self-review/`. Inspect representative
-pages, including the title page, a dense content page, a page with code or a
-formula, a page with tables or figures, and the final page. Use `vision_analyze`
-when available; otherwise inspect the rendered output with an available viewer or
-record visual review as blocked.
+Done: enumerated inspected pages match the required review scope.
 
-Check:
+### 5. Write findings and verdict
 
-- no clipped or overflowing text;
-- no blank or nearly blank accidental pages;
-- readable font sizes and line spacing;
-- consistent headings, numbering, margins, and page breaks;
-- figures and tables fit the page and have captions;
-- code listings are readable;
-- formulas render correctly;
-- references and cross-references resolve;
-- title-page metadata is correct;
-- conclusions match the actual results.
-
-### 6. Write the review
-
-Create `SELF_REVIEW.md` with this structure:
+Write `SELF_REVIEW.md` at the agreed workspace path with these exact headings:
 
 ```markdown
 # Self-Review
@@ -135,7 +128,7 @@ Create `SELF_REVIEW.md` with this structure:
 ## Checks Executed
 
 | Check | Command or tool | Exit status | Evidence | Status |
-|---|---|---:|---|---|
+|---|---|---|---|---|
 
 ## Code Review
 
@@ -151,36 +144,56 @@ Create `SELF_REVIEW.md` with this structure:
 
 ## Final Status
 
-`Final Status: passed` | `Final Status: changes_requested` | `Final Status: blocked`
+Final Status: passed
 ```
 
-Every finding must include a severity (`blocker`, `major`, or `minor`), a file or
-artifact path, and a concrete recommended change. A review with no findings must
-still list the checks that were actually performed and the visual evidence that
-was inspected.
+This is a structure, not a completed review. Fill every section and both tables
+with real evidence. In the final file, do not wrap the contract in fenced code
+blocks or HTML comments. Put lengthy command output in linked log files.
 
-## Rules
+Each required finding has a severity (`blocker`, `major`, `minor`), path/location,
+violated requirement, and concrete correction. Optional advice goes in an
+optional `## Suggestions` section and does not block acceptance by itself.
 
-- Do not rewrite tracked solution files, source data, notebooks, or report sources
-  during the review.
-- Generated outputs may be written only to a temporary directory or
-  `artifacts/self-review/`.
-- Do not call a check passed when it was not executed.
-- Do not infer visual correctness from source code alone.
-- Do not approve a report that has not been rendered when visual review is required.
-- Do not ignore a requirement because it is difficult to test.
-- Distinguish `blocked` from `changes_requested`.
-- Prefer concrete findings over general advice.
+Use `passed`, `changes_requested`, or `blocked` for requirement/verdict status.
+For a passed review, every requirement row must say `passed` with Finding `None.`;
+Changes Requested and Blockers must each contain only `None.`. Checks Executed
+must contain at least one real check; every row must say `passed` with exit `0`.
+For tools that do not expose exit codes, use `not_applicable` in Exit status,
+not a fabricated zero. This never permits skipping the check itself. Table cells
+must be nonempty, with explicit leading/trailing pipes on every table row;
+store commands containing literal pipes in a referenced log
+rather than introducing ambiguous Markdown table delimiters.
 
-## Final Status
+Use exactly one literal status line, alone under `## Final Status`. For failed
+or blocked reviews, preserve findings and actual failed/skipped checks honestly.
 
-Use `passed` only when all requirements are covered, code and calculations have
-been reviewed, and the report has passed visual inspection. Use
-`changes_requested` when the parent agent can fix findings. Use `blocked` when a
-missing input, unavailable tool, or inaccessible source prevents a meaningful review.
+## Parent verification and recovery
 
-The parent agent must validate `SELF_REVIEW.md` with
-`skills/labflow-self-review/scripts/check_self_review.py`. It must fix
-`changes_requested` findings and launch a new fresh self-review subagent. If the
-review is `blocked`, the parent must resolve the blocker or keep the task
-blocked. A previous review does not remain valid after changes.
+Resolve `<skill-root>` from the loaded skill location. Through `terminal`, run:
+
+```text
+python3 <skill-root>/scripts/check_self_review.py <workspace>/SELF_REVIEW.md --require-passed
+```
+
+Without `--require-passed`, the checker provides legacy shape validation only,
+useful for reading blocked/changes-requested reviews; it is not an approval gate.
+With the flag it rejects empty/ambiguous sections, malformed/missing tables,
+nonpassing requirement/check rows and outstanding finding sections. It does not
+open linked evidence, recompute the candidate fingerprint, verify claimed command
+execution, or judge prose/visual correctness. The parent must do those checks.
+Do not claim it is a semantic verifier or security sandbox.
+
+A failed/missing/misplaced/stale review never counts as passed. After fixes,
+archive the old verdict with its candidate identity and review the new candidate.
+Do not edit a candidate while a reviewer is using it. After a fix/review cycle,
+separate real blockers from scope-expanding suggestions; escalate persistent
+blockers with bounded choices rather than launching an endless review loop.
+Stop requests remain in force when late asynchronous results arrive.
+
+## Verification
+
+Full independent approval requires source-grounded coverage, real applicable
+checks, full required visual evidence, unchanged candidate identity, and a
+successful `--require-passed` contract check. Local revision verification,
+independent approval, delivery, and publication are separate states.

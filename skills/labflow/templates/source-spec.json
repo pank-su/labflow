@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "R1",
+      "source": {
+        "path": "inputs/task.txt",
+        "locator": {
+          "lines": [
+            1,
+            1
+          ]
+        },
+        "quote": "σ"
+      },
+      "target": {
+        "path": "out/result.csv",
+        "locator": {
+          "lines": [
+            2,
+            2
+          ]
+        },
+        "quote": "σ"
+      },
+      "transform": "notation-preserving",
+      "reason": "Replace with the actual source-grounded derivation.",
+      "notation": [
+        "σ"
+      ]
+    }
+  ]
+}
